@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
+	"violin-home.cn/retail/common/logs"
 	"violin-home.cn/retail/store"
 )
 
@@ -36,6 +37,30 @@ func GetTenantDateBase(c *gin.Context) string {
 		return "test"
 	}
 	return TenantID
+}
+
+// Find 单一文档查询, 返回结构体数组
+// *
+func Find[T any](databaseName string, collectionName string, filter interface{}) ([]T, error) {
+	collection := store.ClientMongo.Database(databaseName).Collection(collectionName)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	find, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	var ts []T
+	for find.Next(ctx) {
+		var t T
+		err := find.Decode(&t)
+		if err != nil {
+			logs.LG.Error(err.Error())
+			return nil, err
+		}
+		ts = append(ts, t)
+	}
+	return ts, nil
 }
 
 // InsertOne 插入指定对象，包含事务，连续多个插入时，请勿使用。

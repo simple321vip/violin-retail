@@ -36,9 +36,13 @@ func (sr *Router) Route(r *gin.Engine) {
 		v1.GET("/house/in", hh.HouseIn)
 		v1.GET("/house/out", hh.HouseOut)
 
+		v1.GET("/supplier", hh.GetSuppliers)
+		v1.GET("/supplier/put", hh.CreateSupplier)
+
 		// 客户
 		v1.GET("/customer/put", ch.CreateCustomer)
 		v1.GET("/customer/update", ch.UpdateCustomer)
+
 	}
 
 }
