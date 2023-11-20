@@ -6,8 +6,9 @@ import "time"
 type House struct {
 	ID              int            `bson:"_id"`             // ID
 	HouseTime       time.Time      `bson:"HouseTime"`       // 出入库时间
+	SupplierID      int            `bson:"SupplierID"`      // 供货商ID
 	HouseType       int            `bson:"HouseType"`       // 出库或入库 0为出库，1为入库
-	HouseProduct    []HouseProduct `bson:"HouseType"`       // 数量
+	HouseProduct    []HouseProduct `bson:"HouseProduct"`    // 数量
 	AccountsPayable float64        `bson:"AccountsPayable"` // 应付账款
 	ActualPaid      float64        `bson:"ActualPaid"`      // 实付付账款
 	Freight         float64        `bson:"Freight"`         // 运费
