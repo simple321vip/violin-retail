@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
 	"time"
 	"violin-home.cn/retail/common"
@@ -81,8 +82,12 @@ func (hh *Handler) HouseIn(c *gin.Context) {
 		HousePrice: 3000,
 	})
 
+	id, err := common.GetNextID(DataBase, "house")
+	if err != nil {
+		return
+	}
 	sup := models.House{
-		ID:              1,
+		ID:              id + 1,
 		HouseTime:       time.Time{},
 		HouseType:       0,
 		HouseProduct:    houseProducts,
@@ -106,19 +111,37 @@ func (hh *Handler) HouseIn(c *gin.Context) {
 				// 1. 定义查询条件
 				filter := bson.D{{"_id", houseProduct.ProductID}}
 
-				// 2. 定义更新操作
+				// 2. 获取该商品
+				rst := productColl.FindOne(ctx, filter, options.FindOne())
+				var product models.Product
+				if err := rst.Decode(&product); err != nil {
+					logs.LG.Error(err.Error())
+					return err
+				}
+
+				// 3. 计算库存
+				product.StockQuantity += houseProduct.Quantity
+
+				// 4. 定义更新操作
 				update := bson.D{{"$set", bson.M{
-					"StockQuantity": houseProduct.Quantity,
+					"StockQuantity": product.StockQuantity,
 				}}}
 
-				productColl.FindOneAndUpdate(ctx, filter, update)
+				// 5. 更新库存
+				_, err = productColl.UpdateOne(ctx, filter, update)
+				if err != nil {
+					logs.LG.Error(err.Error())
+					return err
+				}
 			}
 
+			// 插入出入库记录
 			collection := store.ClientMongo.Database(DataBase).Collection("house")
 
 			bsonData, err := bson.Marshal(sup)
 
 			if err != nil {
+				logs.LG.Error(err.Error())
 				return err
 			}
 			_, err = collection.InsertOne(ctx, bsonData)
@@ -127,36 +150,15 @@ func (hh *Handler) HouseIn(c *gin.Context) {
 			}
 			return nil
 		})
+		if err != nil {
+			return
+		}
+
 		// 提交事务
 		err = store.CommitTransaction(session)
 		if err != nil {
 			return
 		}
 		c.JSON(http.StatusOK, result.Success("success"))
-	}
-
-}
-
-// HouseOut 出库
-// *
-func (hh *Handler) HouseOut(c *gin.Context) {
-	result := &common.Result{}
-	DataBase := common.GetTenantDateBase(c)
-	houseCol := store.ClientMongo.Database(DataBase).Collection("house")
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	if find, err := houseCol.Find(ctx, bson.D{}); err == nil {
-		var houses []models.House
-		for find.Next(ctx) {
-			var house models.House
-			err := find.Decode(&house)
-			if err != nil {
-				logs.LG.Error(err.Error())
-				return
-			}
-			houses = append(houses, house)
-		}
-		c.JSON(http.StatusOK, result.Success(houses))
 	}
 }

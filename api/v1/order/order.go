@@ -66,25 +66,9 @@ func (oh *Handler) GetOrder(c *gin.Context) {
 // CreateOrder 创建订单
 // *
 func (oh *Handler) CreateOrder(c *gin.Context) {
-	result := &common.Result{}
-	DataBase := common.GetTenantDateBase(c)
-	houseCol := store.ClientMongo.Database(DataBase).Collection("house")
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
+	//result := &common.Result{}
+	//DataBase := common.GetTenantDateBase(c)
 
-	if find, err := houseCol.Find(ctx, bson.D{}); err == nil {
-		var houses []models.House
-		for find.Next(ctx) {
-			var house models.House
-			err := find.Decode(&house)
-			if err != nil {
-				logs.LG.Error(err.Error())
-				return
-			}
-			houses = append(houses, house)
-		}
-		c.JSON(http.StatusOK, result.Success(houses))
-	}
 }
 
 // CancelOrder 取消订单
