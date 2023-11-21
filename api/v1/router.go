@@ -7,6 +7,7 @@ import (
 	"violin-home.cn/retail/api/v1/customer"
 	"violin-home.cn/retail/api/v1/goods"
 	"violin-home.cn/retail/api/v1/house"
+	"violin-home.cn/retail/api/v1/order"
 	"violin-home.cn/retail/common/logs"
 	"violin-home.cn/retail/router"
 	"violin-home.cn/retail/store"
@@ -24,6 +25,7 @@ func (sr *Router) Route(r *gin.Engine) {
 	gh := &goods.Handler{}
 	hh := &house.Handler{}
 	ch := &customer.Handler{}
+	oh := &order.Handler{}
 	v1 := r.Group("violin-retail/api/v1", Interceptor())
 	{
 		// 商品
@@ -34,10 +36,14 @@ func (sr *Router) Route(r *gin.Engine) {
 		v1.GET("/house", hh.GetHouseList)
 		v1.GET("/house/:houseId", hh.GetHouse)
 		v1.GET("/house/in", hh.HouseIn)
-		v1.GET("/house/out", hh.HouseOut)
+		//v1.GET("/house/out", hh.HouseOut)
 
 		v1.GET("/supplier", hh.GetSuppliers)
 		v1.GET("/supplier/put", hh.CreateSupplier)
+
+		// 订单
+		v1.GET("/order/put", oh.CreateOrder)
+		v1.GET("/order/cancel", oh.CancelOrder)
 
 		// 客户
 		v1.GET("/customer/put", ch.CreateCustomer)

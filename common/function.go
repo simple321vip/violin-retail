@@ -188,3 +188,25 @@ func UpdateOne[T any](databaseName string, collectionName string, ID int, model 
 	}
 	return nil
 }
+
+// FindOne 指定_id 查找。
+// *
+func FindOne[T any](databaseName string, collectionName string, ID int) (T, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	collection := store.ClientMongo.Database(databaseName).Collection(collectionName)
+
+	// 1. 定义查询条件
+	filter := bson.D{{"_id", ID}}
+	find := collection.FindOne(ctx, filter)
+	var model T
+	err := find.Decode(&model)
+	if err != nil {
+		logs.LG.Error(err.Error())
+		return model, err
+	}
+
+	return model, nil
+}
