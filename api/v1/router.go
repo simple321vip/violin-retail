@@ -48,7 +48,7 @@ func (sr *Router) Route(r *gin.Engine) {
 		// 客户
 		v1.GET("/customer/put", ch.CreateCustomer)
 		v1.GET("/customer/update", ch.UpdateCustomer)
-
+		v1.GET("/customers", ch.GetCustomers)
 	}
 
 }
