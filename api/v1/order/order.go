@@ -70,7 +70,11 @@ func (oh *Handler) GetOrder(c *gin.Context) {
 func (oh *Handler) CreateOrder(c *gin.Context) {
 	result := &common.Result{}
 	DataBase := common.GetTenantDateBase(c)
-
+	var order models.Order
+	err := c.BindJSON(&order)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, nil)
+	}
 	id, err := common.GetNextID(DataBase, "order")
 	if err != nil {
 		return

@@ -12,7 +12,7 @@ type Order struct {
 	AccountsReceivable       float64        `bson:"AccountsReceivable"`       // 应收账款
 	ActualAccountsReceivable float64        `bson:"ActualAccountsReceivable"` // 实收账款
 	Refund                   float64        `bson:"Refund"`                   // 退款
-	ActualRefund             float64        `bson:"ActualRefund"`             // 退款
+	ActualRefund             float64        `bson:"ActualRefund"`             // 实际退款
 	Freight                  float64        `bson:"Freight"`                  // 运费
 	Comment                  string         `bson:"Name"`                     // 备注
 	IsCancel                 bool           `bson:"IsCancel"`                 // 是否取消

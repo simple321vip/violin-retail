@@ -42,7 +42,7 @@ func (sr *Router) Route(r *gin.Engine) {
 		v1.GET("/supplier/put", hh.CreateSupplier)
 
 		// 订单
-		v1.GET("/order/put", oh.CreateOrder)
+		v1.POST("/order", oh.CreateOrder)
 		v1.GET("/order/cancel", oh.CancelOrder)
 
 		// 客户
