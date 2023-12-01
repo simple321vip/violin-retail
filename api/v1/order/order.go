@@ -71,7 +71,7 @@ func (oh *Handler) CreateOrder(c *gin.Context) {
 	result := &common.Result{}
 	DataBase := common.GetTenantDateBase(c)
 	var order models.Order
-	err := c.BindJSON(&order)
+	err := c.ShouldBind(&order)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, nil)
 	}
@@ -79,24 +79,13 @@ func (oh *Handler) CreateOrder(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	var orderProducts []models.OrderProduct
-	orderProducts = append(orderProducts, models.OrderProduct{
-		ProductID:  1,
-		Quantity:   200,
-		Price:      10,
-		TotalPrice: 2000,
-	}, models.OrderProduct{
-		ProductID:  2,
-		Quantity:   300,
-		Price:      10,
-		TotalPrice: 3000,
-	})
+
 	sup := models.Order{
 		ID:                       id + 1,
 		OrderTime:                time.Time{},
 		CustomerID:               1,
 		OrderType:                0,
-		OrderProducts:            orderProducts,
+		OrderProducts:            order.OrderProducts,
 		AccountsReceivable:       5000,
 		ActualAccountsReceivable: 5000,
 		Refund:                   0,
@@ -115,9 +104,9 @@ func (oh *Handler) CreateOrder(c *gin.Context) {
 
 			// 商品库存修改
 			productColl := store.ClientMongo.Database(DataBase).Collection("product")
-			for _, orderProduct := range orderProducts {
+			for _, orderProduct := range order.OrderProducts {
 				// 1. 定义查询条件
-				filter := bson.D{{"_id", orderProduct.ProductID}}
+				filter := bson.D{{"_id", orderProduct.ID}}
 
 				// 2. 获取该商品
 				rst := productColl.FindOne(ctx, filter, options.FindOne())
@@ -167,7 +156,7 @@ func (oh *Handler) CreateOrder(c *gin.Context) {
 		if err != nil {
 			return
 		}
-		c.JSON(http.StatusOK, result.Success("success"))
+		c.JSON(http.StatusOK, result.Success(sup.ID))
 	}
 
 }
@@ -201,7 +190,7 @@ func (oh *Handler) CancelOrder(c *gin.Context) {
 			productColl := store.ClientMongo.Database(DataBase).Collection("product")
 			for _, orderProduct := range order.OrderProducts {
 				// 1. 定义查询条件
-				filter := bson.D{{"_id", orderProduct.ProductID}}
+				filter := bson.D{{"_id", orderProduct.ID}}
 
 				// 2. 获取该商品
 				rst := productColl.FindOne(ctx, filter, options.FindOne())
