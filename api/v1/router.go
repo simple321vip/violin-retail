@@ -43,6 +43,8 @@ func (sr *Router) Route(r *gin.Engine) {
 
 		// 订单
 		v1.POST("/order", oh.CreateOrder)
+		v1.GET("/order", oh.GetOrder)
+		v1.GET("/orders", oh.GetOrderList)
 		v1.GET("/order/cancel", oh.CancelOrder)
 
 		// 客户

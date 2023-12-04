@@ -22,22 +22,22 @@ type Handler struct {
 func (oh *Handler) GetOrderList(c *gin.Context) {
 	result := &common.Result{}
 	DataBase := common.GetTenantDateBase(c)
-	houseCol := store.ClientMongo.Database(DataBase).Collection("house")
+	collection := store.ClientMongo.Database(DataBase).Collection(common.Order)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	if find, err := houseCol.Find(ctx, bson.D{}); err == nil {
-		var houses []models.House
+	if find, err := collection.Find(ctx, bson.D{}); err == nil {
+		var orders []models.Order
 		for find.Next(ctx) {
-			var house models.House
-			err := find.Decode(&house)
+			var order models.Order
+			err := find.Decode(&order)
 			if err != nil {
 				logs.LG.Error(err.Error())
 				return
 			}
-			houses = append(houses, house)
+			orders = append(orders, order)
 		}
-		c.JSON(http.StatusOK, result.Success(houses))
+		c.JSON(http.StatusOK, result.Success(orders))
 	}
 }
 
@@ -46,22 +46,22 @@ func (oh *Handler) GetOrderList(c *gin.Context) {
 func (oh *Handler) GetOrder(c *gin.Context) {
 	result := &common.Result{}
 	DataBase := common.GetTenantDateBase(c)
-	houseCol := store.ClientMongo.Database(DataBase).Collection("house")
+	collection := store.ClientMongo.Database(DataBase).Collection(common.Order)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	if find, err := houseCol.Find(ctx, bson.D{}); err == nil {
-		var houses []models.House
+	if find, err := collection.Find(ctx, bson.D{}); err == nil {
+		var orders []models.Order
 		for find.Next(ctx) {
-			var house models.House
-			err := find.Decode(&house)
+			var order models.Order
+			err := find.Decode(&order)
 			if err != nil {
 				logs.LG.Error(err.Error())
 				return
 			}
-			houses = append(houses, house)
+			orders = append(orders, order)
 		}
-		c.JSON(http.StatusOK, result.Success(houses))
+		c.JSON(http.StatusOK, result.Success(orders))
 	}
 }
 
