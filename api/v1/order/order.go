@@ -20,17 +20,48 @@ type Handler struct {
 // GetOrderList 获取订单一览
 // *
 func (oh *Handler) GetOrderList(c *gin.Context) {
+	//unit := c.Param("unit")
+	start := time.Now().Add(-time.Hour * 24 * 30)
 	result := &common.Result{}
 	DataBase := common.GetTenantDateBase(c)
 	collection := store.ClientMongo.Database(DataBase).Collection(common.Order)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	if find, err := collection.Find(ctx, bson.D{}); err == nil {
+	unwind := bson.M{
+		"$unwind": bson.M{
+			"path":                       "$Customer", // 将主表查询结果和从表查询结果1对1关联
+			"preserveNullAndEmptyArrays": true,        // 空数组记录保留，不会丢失主表数据
+		},
+	}
+
+	// outer left join
+	lookup := bson.M{
+		"$lookup": bson.M{
+			"from":         "customer",   // 关联表 color
+			"localField":   "CustomerID", // 主表 关联字段
+			"foreignField": "_id",        // 关联表color 关联字段
+			"as":           "Customer",   // 查询后返回结果名称，一对多，该结果为数组，当使用unwind时候，变成1对1形式，变成对象
+		},
+	}
+
+	match := bson.M{
+		"$match": bson.M{
+			"OrderTime": bson.M{
+				"$gt": start,
+			},
+		},
+	}
+
+	pipeline := []bson.M{lookup, unwind, match}
+
+	// 执行聚合查询
+	cursor, err := collection.Aggregate(context.Background(), pipeline)
+	if err == nil {
 		var orders []models.Order
-		for find.Next(ctx) {
+		for cursor.Next(ctx) {
 			var order models.Order
-			err := find.Decode(&order)
+			err := cursor.Decode(&order)
 			if err != nil {
 				logs.LG.Error(err.Error())
 				return
@@ -81,9 +112,9 @@ func (oh *Handler) CreateOrder(c *gin.Context) {
 	}
 
 	sup := models.Order{
-		ID:                       id + 1,
-		OrderTime:                time.Time{},
-		CustomerID:               1,
+		ID:        id + 1,
+		OrderTime: time.Time{},
+		//CustomerID:               1,
 		OrderType:                0,
 		OrderProducts:            order.OrderProducts,
 		AccountsReceivable:       5000,
