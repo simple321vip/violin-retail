@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
+	"strconv"
 	"time"
 	"violin-home.cn/retail/common"
 	"violin-home.cn/retail/common/logs"
@@ -75,25 +76,16 @@ func (oh *Handler) GetOrderList(c *gin.Context) {
 // GetOrder 获取订单明细
 // *
 func (oh *Handler) GetOrder(c *gin.Context) {
+	id, _ := strconv.ParseInt(c.Query("orderID"), 10, 64)
 	result := &common.Result{}
 	DataBase := common.GetTenantDateBase(c)
-	collection := store.ClientMongo.Database(DataBase).Collection(common.Order)
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
 
-	if find, err := collection.Find(ctx, bson.D{}); err == nil {
-		var orders []models.Order
-		for find.Next(ctx) {
-			var order models.Order
-			err := find.Decode(&order)
-			if err != nil {
-				logs.LG.Error(err.Error())
-				return
-			}
-			orders = append(orders, order)
-		}
-		c.JSON(http.StatusOK, result.Success(orders))
+	one, err := common.FindOne[models.Order](DataBase, common.Order, int(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.Fail(500, ""))
+		return
 	}
+	c.JSON(http.StatusOK, result.Success(one))
 }
 
 // CreateOrder 创建订单
