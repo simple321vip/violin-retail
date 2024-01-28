@@ -80,12 +80,19 @@ func (oh *Handler) GetOrder(c *gin.Context) {
 	result := &common.Result{}
 	DataBase := common.GetTenantDateBase(c)
 
-	one, err := common.FindOne[models.Order](DataBase, common.Order, int(id))
+	order, err := common.FindOne[models.Order](DataBase, common.Order, int(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, result.Fail(500, ""))
 		return
 	}
-	c.JSON(http.StatusOK, result.Success(one))
+	customer, err := common.FindOne[models.Customer](DataBase, common.Customer, order.CustomerId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.Fail(500, ""))
+		return
+	}
+	order.Customer = &customer
+
+	c.JSON(http.StatusOK, result.Success(order))
 }
 
 // CreateOrder 创建订单
@@ -104,17 +111,17 @@ func (oh *Handler) CreateOrder(c *gin.Context) {
 	}
 
 	sup := models.Order{
-		ID:        id + 1,
-		OrderTime: time.Time{},
-		//CustomerID:               1,
-		OrderType:                0,
+		ID:                       id + 1,
+		OrderTime:                time.Now(),
+		CustomerId:               order.Customer.ID,
+		OrderType:                order.OrderType,
 		OrderProducts:            order.OrderProducts,
-		AccountsReceivable:       5000,
-		ActualAccountsReceivable: 5000,
-		Refund:                   0,
-		ActualRefund:             0,
-		Freight:                  0,
-		Comment:                  "",
+		AccountsReceivable:       order.AccountsReceivable,
+		ActualAccountsReceivable: order.ActualAccountsReceivable,
+		Refund:                   order.Refund,
+		ActualRefund:             order.ActualRefund,
+		Freight:                  order.Freight,
+		Comment:                  order.Comment,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)

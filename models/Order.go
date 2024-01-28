@@ -4,9 +4,10 @@ import "time"
 
 // Order 订单
 type Order struct {
-	ID                       int                                                   `bson:"_id"`                                // ID
+	ID int `bson:"_id"` // ID
+
 	OrderTime                time.Time                                             `bson:"OrderTime"`                          // 订单创建时间
-	OrderType                int                                                   `bson:"OrderType"`                          // 出库或入库 0为销售，1为退货
+	OrderType                int                                                   `bson:"OrderType"`                          // 0为销售，1为退货
 	OrderProducts            []OrderProduct                                        `json:"OrderProducts" bson:"OrderProducts"` // 商品一览
 	AccountsReceivable       float64                                               `bson:"AccountsReceivable"`                 // 应收账款
 	ActualAccountsReceivable float64                                               `bson:"ActualAccountsReceivable"`           // 实收账款
@@ -15,7 +16,9 @@ type Order struct {
 	Freight                  float64                                               `bson:"Freight"`                            // 运费
 	Comment                  string                                                `json:"Comment" bson:"Name"`                // 备注
 	IsCancel                 bool                                                  `bson:"IsCancel"`                           // 是否取消
+	CustomerId               int                                                   `bson:"CustomerId"`                         // 商品种类ID
 	*Customer                `json:"Customer,omitempty" bson:"Customer,omitempty"` // 商品种类ID
+
 }
 
 // OrderProduct 出入库商品
