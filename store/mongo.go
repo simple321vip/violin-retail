@@ -14,7 +14,7 @@ func NewMongoClient() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	ClientMongo, _ = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	ClientMongo, _ = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://mongo:27017"))
 }
 
 // StartTransaction 开启事务

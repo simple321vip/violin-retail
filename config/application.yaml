@@ -1,6 +1,6 @@
 server:
   name: violin-retail
-  addr: "0.0.0.0:8080"
+  addr: "0.0.0.0:8081"
 
 zap:
   debugFileName: "E:\\log\\violin-api\\debug.log"

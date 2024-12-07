@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"net/http"
+	"strconv"
 	"time"
 	"violin-home.cn/retail/common"
 	"violin-home.cn/retail/common/logs"
@@ -19,94 +20,105 @@ type Handler struct {
 // **
 func (ch *Handler) GetCustomers(c *gin.Context) {
 	result := &common.Result{}
-
-	DataBase := common.GetTenantDateBase(c)
-	collection := store.ClientMongo.Database(DataBase).Collection("customer")
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	gh := ch.GetHandler()
+	collection := store.ClientMongo.Database(gh.DatabaseName).Collection(gh.CollectionName)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-
-	if find, err := collection.Find(ctx, bson.D{}); err == nil {
-		var customers []models.Customer
-		for find.Next(ctx) {
-			var customer models.Customer
-			err := find.Decode(&customer)
-			if err != nil {
-				logs.LG.Error(err.Error())
-				return
-			}
-			customers = append(customers, customer)
-		}
-		c.JSON(http.StatusOK, result.Success(customers))
+	find, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
+		return
 	}
-
+	var customers []models.Customer
+	for find.Next(ctx) {
+		var customer models.Customer
+		err := find.Decode(&customer)
+		if err != nil {
+			logs.LG.Error(err.Error())
+			return
+		}
+		customers = append(customers, customer)
+	}
+	c.JSON(http.StatusOK, customers)
 }
 
 // CreateCustomer 创建客户
 // *
 func (ch *Handler) CreateCustomer(c *gin.Context) {
 	result := &common.Result{}
-	DataBase := common.GetTenantDateBase(c)
+	var customer = models.NewCustomer()
+	err := c.ShouldBindJSON(customer)
+	gh := ch.GetHandler()
 
-	ID, _ := common.GetNextID(DataBase, "customer")
-	Customer := models.Customer{
-		ID:                 ID + 1,
-		Name:               "李刚",
-		Rank:               0,
-		Contacts:           "李刚",
-		Phone:              "13332247026",
-		Address:            "北京天安门",
-		AccountsReceivable: 0,
-		Comment:            "我爱北京天安门",
+	collection := store.ClientMongo.Database(gh.DatabaseName).Collection(gh.CollectionName)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	query := bson.M{
+		"Phone": customer.Phone,
 	}
+	find, err := collection.Find(ctx, query)
+	if find.TryNext(ctx) {
+		c.JSON(http.StatusBadRequest, result.Fail(500, "已存在此客户，无需创建。"))
+		return
+	}
+	_, err = gh.InsertOne(customer)
 
-	err := common.InsertOne(DataBase, "customer", Customer)
 	if err != nil {
 		logs.LG.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
 		return
 	}
-	c.JSON(http.StatusOK, result.Success("success"))
 }
 
 // DeleteCustomer 删除客户
 // *
 func (ch *Handler) DeleteCustomer(c *gin.Context) {
 	result := &common.Result{}
-	DataBase := common.GetTenantDateBase(c)
-
-	ID := 1
-	err := common.DeleteOne(DataBase, "customer", ID)
+	ID, _ := strconv.Atoi(c.Param("ID"))
+	gh := ch.GetHandler()
+	err := gh.DeleteOne(ID)
 	if err != nil {
-		logs.LG.Error(err.Error())
-		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
+		c.JSON(http.StatusInternalServerError, result.Fail(500, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, result.Success("success"))
+	c.JSON(http.StatusOK, nil)
 }
 
 // UpdateCustomer 客户信息修改
 // *
 func (ch *Handler) UpdateCustomer(c *gin.Context) {
 	result := &common.Result{}
-	DataBase := common.GetTenantDateBase(c)
-	ID := 1
+	gh := ch.GetHandler()
+	var customer = models.NewCustomer()
+	err := c.ShouldBindJSON(customer)
 
-	Customer := models.Customer{
-		ID:                 ID,
-		Name:               "xiaowang",
-		Rank:               0,
-		Contacts:           "李刚1",
-		Phone:              "133",
-		Address:            "2222",
-		AccountsReceivable: 0,
-		Comment:            "11111",
+	collection := store.ClientMongo.Database(gh.DatabaseName).Collection(gh.CollectionName)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	query := bson.M{
+		"Phone": customer.Phone,
+		"ID":    bson.M{"$ne": customer.ID},
+	}
+	find, err := collection.Find(ctx, query)
+	if find.TryNext(ctx) {
+		c.JSON(http.StatusBadRequest, result.Fail(500, "此电话已经存在，请确认。"))
+		return
 	}
 
-	err := common.UpdateOne(DataBase, "customer", ID, Customer)
+	err = gh.UpdateOne(customer)
 	if err != nil {
 		logs.LG.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
 		return
 	}
-	c.JSON(http.StatusOK, result.Success("success"))
+	c.JSON(http.StatusOK, nil)
+}
+
+func (ch *Handler) GetHandler() *common.BaseHandler {
+	gh := &common.BaseHandler{
+		DatabaseName:   "test",
+		CollectionName: "customer",
+		Collection:     common.Customer,
+	}
+	return gh
 }

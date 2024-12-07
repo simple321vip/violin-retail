@@ -7,4 +7,9 @@
     Refund 退款
     ActualRefund 实际退款
 
-## 
+## Product
+
+    StockQuantity 库存数量
+    RetailPrice 零售价格
+    
+    CategoryID 商品种类ID

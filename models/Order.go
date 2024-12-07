@@ -27,4 +27,5 @@ type OrderProduct struct {
 	Quantity   int     `bson:"Quantity"`   // 出入库数量
 	Price      float64 `bson:"Price"`      // 单价
 	TotalPrice float64 `bson:"TotalPrice"` // 总价
+	Checked    bool    `bson:"Checked"`    // 是否选中
 }

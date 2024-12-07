@@ -1,0 +1,17 @@
+server:
+  name: violin-retail
+  addr: "0.0.0.0:8080"
+
+zap:
+  debugFileName: "/log/violin-api/debug.log"
+  infoFileName: "/log/violin-api/info.log"
+  warnFileName: "/log/violin-api/warn.log"
+  maxSize: 500
+  maxAge: 28
+  maxBackups: 3
+
+redis:
+  host: "redis"
+  port: 6379
+  password: "123456"
+  db: 3

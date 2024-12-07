@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 	"violin-home.cn/retail/api/v1/customer"
+	"violin-home.cn/retail/api/v1/door"
 	"violin-home.cn/retail/api/v1/goods"
 	"violin-home.cn/retail/api/v1/house"
 	"violin-home.cn/retail/api/v1/order"
@@ -26,7 +27,8 @@ func (sr *Router) Route(r *gin.Engine) {
 	hh := &house.Handler{}
 	ch := &customer.Handler{}
 	oh := &order.Handler{}
-	v1 := r.Group("violin-retail/api/v1", Interceptor())
+	dh := &door.Handler{}
+	v1 := r.Group("retail/api/v1", Interceptor())
 	{
 		// 商品
 		v1.GET("/goods", gh.GetGoods)
@@ -48,9 +50,25 @@ func (sr *Router) Route(r *gin.Engine) {
 		v1.GET("/order/cancel", oh.CancelOrder)
 
 		// 客户
-		v1.GET("/customer/put", ch.CreateCustomer)
-		v1.GET("/customer/update", ch.UpdateCustomer)
-		v1.GET("/customers", ch.GetCustomers)
+		v1.POST("/customer", ch.CreateCustomer)
+		v1.DELETE("/customer/:ID", ch.DeleteCustomer)
+		v1.PUT("/customer/:ID", ch.UpdateCustomer)
+		v1.GET("/customer", ch.GetCustomers)
+
+		// 柜门
+		v1.GET("/doorSheet", dh.GetDoorList)
+		v1.GET("/doorSheet/:ID", dh.GetDoorSheet)
+		v1.DELETE("/doorSheet/:ID", dh.DeleteDoorSheet)
+		v1.PUT("/doorSheet/:ID", dh.UpdateDoorSheet)
+		v1.POST("/doorSheet", dh.CreateDoorSheet)
+
+		// 货物
+		//v1.POST("/doorSheet/:id", dh.GetDoorList)
+		//v1.DELETE("/customer/:id", dh.DeleteCustomer)
+		//v1.PUT("/customer/:id", dh.UpdateCustomer)
+		v1.POST("/goods", gh.IncreaseGoods)
+		v1.POST("/goodType", gh.IncreaseGoodType)
+		v1.DELETE("/goodType", gh.DeleteGoodType)
 	}
 
 }

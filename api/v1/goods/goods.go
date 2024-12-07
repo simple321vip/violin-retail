@@ -32,11 +32,6 @@ func (nh *Handler) GetGoods(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	// 多表查询
-	// https://www.mebugs.com/post/mgolookup.html
-	// 聚合查询
-	// All stages except the $out, $merge, $geoNear, $changeStream, and $changeStreamSplitLargeEvent stages
-	// can appear multiple times in a pipeline.
 	unwind1 := bson.M{
 		"$unwind": bson.M{
 			"path":                       "$Color", // 将主表查询结果和从表查询结果1对1关联
@@ -86,69 +81,74 @@ func (nh *Handler) GetGoods(c *gin.Context) {
 		}
 		c.JSON(http.StatusOK, result.Success(goods))
 	}
-
 }
 
 // IncreaseGoods 新增商品
 // **
 func (nh *Handler) IncreaseGoods(c *gin.Context) {
-
-	//result := &common.Result{}
-	//var err error
-	//defer func() {
-	//	if err != nil {
-	//		logs.LG.Error(err.Error())
-	//		c.JSON(http.StatusInternalServerError, nil)
-	//	}
-	//}()
-
-	// 一个租户一个数据库
+	//var goods = models.NewGoods()
+	//err := c.ShouldBindJSON(goods)
+	//if err != nil {
+	//	c.JSON(http.StatusInternalServerError, nil)
+	//	return
+	//}
 	//DataBase := common.GetTenantDateBase(c)
-	//ID, _ := common.GetNextID(DataBase, "product")
-	//Product := &models.Product{
-	//	ID:            ID + 1,
-	//	Name:          "实木地板",
-	//	RetailPrice:   120.5,
-	//	Unit:          "张",
-	//	StockQuantity: 110,
-	//	SizeID:        1,
-	//}
+	//ID, _ := common.GetNextID(DataBase, "goods")
+	//goods.ID = ID + 1
 	//
-	//ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	//defer cancel()
+	//err = common.InsertOne(DataBase, "goods", goods)
+	//if err != nil {
+	//	c.JSON(http.StatusInternalServerError, err.Error())
+	//	return
+	//}
+	//one, err := common.FindOne[models.Goods](DataBase, "goods", goods.ID)
+	//if err != nil {
+	//	return
+	//}
+	//c.JSON(http.StatusOK, one)
+}
 
-	//// 开启事务
-	//session, err := store.StartTransaction()
+// IncreaseGoodType 新增分类
+// **
+func (nh *Handler) IncreaseGoodType(c *gin.Context) {
+	//var goodType = models.NewGoodType()
+	//err := c.ShouldBindJSON(&goodType)
+	//if err != nil {
+	//	c.JSON(http.StatusInternalServerError, nil)
+	//	return
+	//}
+	//DataBase := common.GetTenantDateBase(c)
+	//ID, _ := common.GetNextID(DataBase, "goodType")
+	//goodType.ID = ID + 1
+	//
+	//err = common.InsertOne(DataBase, "goodType", goodType)
+	//if err != nil {
+	//	c.JSON(http.StatusInternalServerError, err.Error())
+	//	return
+	//}
+	//some, err := common.Find[models.GoodType](DataBase, "goodType", bson.D{})
 	//if err != nil {
 	//	return
 	//}
-	//
-	//// 执行事务
-	//err = mongo.WithSession(context.Background(), session, func(sessionContext mongo.SessionContext) error {
-	//
-	//	collection = store.ClientMongo.Database(DataBase).Collection("product")
-	//
-	//	bsonData, err := bson.Marshal(Product)
-	//
-	//	if err != nil {
-	//		return err
-	//	}
-	//	_, err = collection.InsertOne(ctx, bsonData)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	return nil
-	//})
-	//
+	//c.JSON(http.StatusOK, some)
+}
+
+// DeleteGoodType 删除分类
+// **
+func (nh *Handler) DeleteGoodType(c *gin.Context) {
+	//gh := &common.Handler{
+	//	DatabaseName:   "test",
+	//	CollectionName: "goodType",
+	//}
+	//_, err := gh.DeleteOne(c)
 	//if err != nil {
+	//	c.JSON(http.StatusInternalServerError, err.Error())
 	//	return
 	//}
 	//
-	//// 提交事务
-	//err = store.CommitTransaction(session)
+	//find, err := gh.Find(bson.D{})
 	//if err != nil {
 	//	return
 	//}
-	//
-	//c.JSON(http.StatusOK, result.Success("success"))
+	//c.JSON(http.StatusOK, find)
 }
