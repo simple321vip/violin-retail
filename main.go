@@ -14,6 +14,9 @@ import (
 
 func main() {
 
+	// 加载配置文件
+	config.InitConfig()
+
 	r := gin.Default()
 	r.Use(Cors())
 

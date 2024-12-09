@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 	"violin-home.cn/retail/common/logs"
+	"violin-home.cn/retail/config"
 )
 
 var ClientMongo *mongo.Client
@@ -13,8 +14,16 @@ var ClientMongo *mongo.Client
 func NewMongoClient() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-
-	ClientMongo, _ = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://mongo:27017"))
+	// mongodb://mongo:27017
+	url := "mongodb://" + config.Conf.MC.Host + ":" + config.Conf.MC.Port
+	ClientMongo, _ = mongo.Connect(ctx, options.Client().ApplyURI(url))
+	// 检查连接是否成功
+	err := ClientMongo.Ping(ctx, nil)
+	if err != nil {
+		logs.LG.Error("Failed to ping MongoDB:" + err.Error())
+	} else {
+		logs.LG.Debug("connect to mongo db service successfully")
+	}
 }
 
 // StartTransaction 开启事务

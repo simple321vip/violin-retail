@@ -11,7 +11,11 @@ zap:
   maxBackups: 3
 
 redis:
-  host: "redis"
-  port: 6379
+  network: "tcp"
+  addr: "redis:6379"
   password: "123456"
   db: 3
+
+mongo:
+  host: "mongo"
+  port: 27017

@@ -10,6 +10,8 @@ import (
 type Config struct {
 	viper *viper.Viper
 	SC    *ServerConfig
+	MC    *MongoConfig
+	RC    *RedisConfig
 	//GC    *GrpcServerConfig
 	LC *logs.LogConfig
 }
@@ -19,12 +21,24 @@ type ServerConfig struct {
 	Addr string
 }
 
+type RedisConfig struct {
+	Network  string
+	Addr     string
+	Password string
+	DB       int
+}
+
+type MongoConfig struct {
+	Host string
+	Port string
+}
+
 //type GrpcServerConfig struct {
 //	Name string
 //	Addr string
 //}
 
-var Conf = InitConfig()
+var Conf *Config
 
 func InitConfig() *Config {
 	v := viper.New()
@@ -41,17 +55,42 @@ func InitConfig() *Config {
 
 	config.ReadServerConfig()
 	config.ReadLogsConfig()
+	config.ReadMongoConfig()
+	config.ReadRedisConfig()
 	//config.ReadGrpcServerConfig()
-	logs.InitConfig(config.LC)
+	err = logs.InitConfig(config.LC)
+	if err != nil {
+		return nil
+	}
+	Conf = config
 	return config
 }
 
+// ReadServerConfig 获取服务器配置
 func (c *Config) ReadServerConfig() {
 	sc := &ServerConfig{
 		Name: c.viper.GetString("server.name"),
 		Addr: c.viper.GetString("server.addr"),
 	}
 	c.SC = sc
+}
+
+// ReadMongoConfig 获取mongo数据库配置
+func (c *Config) ReadMongoConfig() {
+	c.MC = &MongoConfig{
+		Host: c.viper.GetString("mongo.host"),
+		Port: c.viper.GetString("mongo.port"),
+	}
+}
+
+// ReadRedisConfig 获取mongo数据库配置
+func (c *Config) ReadRedisConfig() {
+	c.RC = &RedisConfig{
+		Network:  c.viper.GetString("redis.network"),
+		Addr:     c.viper.GetString("mongo.addr"),
+		Password: c.viper.GetString("redis.password"),
+		DB:       c.viper.GetInt("mongo.db"),
+	}
 }
 
 //func (c *Config) ReadGrpcServerConfig() {

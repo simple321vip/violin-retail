@@ -18,7 +18,7 @@ COPY retail .
 
 RUN chmod +x retail
 
-EXPOSE 9090
+EXPOSE 8080
 
 # CMD 设置启动命令
 CMD ["/app/retail"]

@@ -2,6 +2,7 @@ package store
 
 import (
 	"github.com/go-redis/redis"
+	"violin-home.cn/retail/config"
 )
 
 var ClientRedis *redis.Client
@@ -9,10 +10,10 @@ var ClientRedis *redis.Client
 func NewRedisClient() {
 
 	ClientRedis = redis.NewClient(&redis.Options{
-		Network:  "tcp",
-		Addr:     "localhost:6379",
-		Password: "123456",
-		DB:       3,
+		Network:  config.Conf.RC.Network,
+		Addr:     config.Conf.RC.Addr,
+		Password: config.Conf.RC.Password,
+		DB:       config.Conf.RC.DB,
 	})
 
 }
