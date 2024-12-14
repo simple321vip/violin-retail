@@ -20,24 +20,10 @@ type Handler struct {
 // **
 func (th *Handler) GetGoodType(c *gin.Context) {
 	result := &common.Result{}
-	gh := th.GetHandler()
-	collection := store.ClientMongo.Database(gh.DatabaseName).Collection(gh.CollectionName)
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	find, err := collection.Find(ctx, bson.D{})
+	goodTypes, err := th.getAllGoodTypes()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
 		return
-	}
-	var goodTypes []models.GoodType
-	for find.Next(ctx) {
-		var goodType models.GoodType
-		err := find.Decode(&goodType)
-		if err != nil {
-			logs.LG.Error(err.Error())
-			return
-		}
-		goodTypes = append(goodTypes, goodType)
 	}
 	c.JSON(http.StatusOK, goodTypes)
 }
@@ -56,6 +42,13 @@ func (th *Handler) CreateGoodType(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
 		return
 	}
+
+	goodTypes, err := th.getAllGoodTypes()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
+		return
+	}
+	c.JSON(http.StatusOK, goodTypes)
 }
 
 // DeleteGoodType 删除货品
@@ -69,7 +62,12 @@ func (th *Handler) DeleteGoodType(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, result.Fail(500, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, nil)
+	goodTypes, err := th.getAllGoodTypes()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
+		return
+	}
+	c.JSON(http.StatusOK, goodTypes)
 }
 
 // UpdateGoodType 分类信息修改
@@ -81,11 +79,38 @@ func (th *Handler) UpdateGoodType(c *gin.Context) {
 	err := c.ShouldBindJSON(goodType)
 	err = gh.UpdateOne(goodType)
 	if err != nil {
-		logs.LG.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
 		return
 	}
-	c.JSON(http.StatusOK, nil)
+	goodTypes, err := th.getAllGoodTypes()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
+		return
+	}
+	c.JSON(http.StatusOK, goodTypes)
+}
+
+func (th *Handler) getAllGoodTypes() ([]models.GoodType, error) {
+	gh := th.GetHandler()
+	collection := store.ClientMongo.Database(gh.DatabaseName).Collection(gh.CollectionName)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	find, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		logs.LG.Error(err.Error())
+		return nil, err
+	}
+	var goodTypes []models.GoodType
+	for find.Next(ctx) {
+		var goodType models.GoodType
+		err := find.Decode(&goodType)
+		if err != nil {
+			logs.LG.Error(err.Error())
+			return nil, err
+		}
+		goodTypes = append(goodTypes, goodType)
+	}
+	return goodTypes, nil
 }
 
 func (th *Handler) GetHandler() *common.BaseHandler {
