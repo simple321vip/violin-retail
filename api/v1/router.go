@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+	"violin-home.cn/retail/api/v1/brand"
 	"violin-home.cn/retail/api/v1/customer"
 	"violin-home.cn/retail/api/v1/door"
 	"violin-home.cn/retail/api/v1/goodType"
@@ -26,6 +27,7 @@ func (sr *Router) Route(r *gin.Engine) {
 
 	gh := &goods.Handler{}
 	th := &goodType.Handler{}
+	bh := &brand.Handler{}
 	hh := &house.Handler{}
 	ch := &customer.Handler{}
 	oh := &order.Handler{}
@@ -43,6 +45,12 @@ func (sr *Router) Route(r *gin.Engine) {
 		v1.POST("/goodType", th.CreateGoodType)
 		v1.PUT("/goodType/:ID", th.UpdateGoodType)
 		v1.DELETE("/goodType/:ID", th.DeleteGoodType)
+
+		// 品牌
+		v1.GET("/brand", bh.GetBrand)
+		v1.POST("/brand", bh.CreateBrand)
+		v1.PUT("/brand/:ID", bh.UpdateBrand)
+		v1.DELETE("/brand/:ID", bh.DeleteBrand)
 
 		// 出入库
 		v1.GET("/house", hh.GetHouseList)

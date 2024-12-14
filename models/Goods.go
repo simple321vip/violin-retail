@@ -46,3 +46,13 @@ func NewGoodType() *GoodType {
 func (ms *GoodType) SetID(ID int) {
 	ms.ID = ID
 }
+
+// NewBrand 品牌
+func NewBrand() *Brand {
+	return &Brand{}
+}
+
+// SetID 实现SetID方法，用于接收并设置值
+func (ms *Brand) SetID(ID int) {
+	ms.ID = ID
+}

@@ -10,4 +10,5 @@ const (
 	Customer = "customer"
 	Goods    = "goods"
 	GoodType = "goodType"
+	Brand    = "Brand"
 )
