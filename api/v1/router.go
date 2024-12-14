@@ -6,6 +6,7 @@ import (
 	"strings"
 	"violin-home.cn/retail/api/v1/customer"
 	"violin-home.cn/retail/api/v1/door"
+	"violin-home.cn/retail/api/v1/goodType"
 	"violin-home.cn/retail/api/v1/goods"
 	"violin-home.cn/retail/api/v1/house"
 	"violin-home.cn/retail/api/v1/order"
@@ -24,6 +25,7 @@ type Router struct {
 func (sr *Router) Route(r *gin.Engine) {
 
 	gh := &goods.Handler{}
+	th := &goodType.Handler{}
 	hh := &house.Handler{}
 	ch := &customer.Handler{}
 	oh := &order.Handler{}
@@ -32,7 +34,15 @@ func (sr *Router) Route(r *gin.Engine) {
 	{
 		// 商品
 		v1.GET("/goods", gh.GetGoods)
-		v1.GET("/goods/put", gh.IncreaseGoods)
+		v1.POST("/goods", gh.CreateGoods)
+		v1.PUT("/goods/:ID", gh.UpdateGoods)
+		v1.DELETE("/goods/:ID", gh.DeleteGoods)
+
+		// 商品分类
+		v1.GET("/goodType", th.GetGoodType)
+		v1.POST("/goodType", th.CreateGoodType)
+		v1.PUT("/goodType/:ID", th.UpdateGoodType)
+		v1.DELETE("/goodType/:ID", th.DeleteGoodType)
 
 		// 出入库
 		v1.GET("/house", hh.GetHouseList)
@@ -62,13 +72,6 @@ func (sr *Router) Route(r *gin.Engine) {
 		v1.PUT("/doorSheet/:ID", dh.UpdateDoorSheet)
 		v1.POST("/doorSheet", dh.CreateDoorSheet)
 
-		// 货物
-		//v1.POST("/doorSheet/:id", dh.GetDoorList)
-		//v1.DELETE("/customer/:id", dh.DeleteCustomer)
-		//v1.PUT("/customer/:id", dh.UpdateCustomer)
-		v1.POST("/goods", gh.IncreaseGoods)
-		v1.POST("/goodType", gh.IncreaseGoodType)
-		v1.DELETE("/goodType", gh.DeleteGoodType)
 	}
 
 }

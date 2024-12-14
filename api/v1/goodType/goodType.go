@@ -1,4 +1,4 @@
-package goods
+package goodType
 
 import (
 	"context"
@@ -16,11 +16,11 @@ import (
 type Handler struct {
 }
 
-// GetGoods 获取商品一栏
+// GetGoodType 获取分类一栏
 // **
-func (nh *Handler) GetGoods(c *gin.Context) {
+func (th *Handler) GetGoodType(c *gin.Context) {
 	result := &common.Result{}
-	gh := nh.GetHandler()
+	gh := th.GetHandler()
 	collection := store.ClientMongo.Database(gh.DatabaseName).Collection(gh.CollectionName)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -29,28 +29,28 @@ func (nh *Handler) GetGoods(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
 		return
 	}
-	var goods []models.Goods
+	var goodTypes []models.GoodType
 	for find.Next(ctx) {
-		var good models.Goods
-		err := find.Decode(&good)
+		var goodType models.GoodType
+		err := find.Decode(&goodType)
 		if err != nil {
 			logs.LG.Error(err.Error())
 			return
 		}
-		goods = append(goods, good)
+		goodTypes = append(goodTypes, goodType)
 	}
-	c.JSON(http.StatusOK, goods)
+	c.JSON(http.StatusOK, goodTypes)
 }
 
-// IncreaseGoods 新增商品
+// CreateGoodType 新增商品分类
 // **
-func (nh *Handler) CreateGoods(c *gin.Context) {
+func (th *Handler) CreateGoodType(c *gin.Context) {
 	result := &common.Result{}
-	var goods = models.NewGoods()
-	err := c.ShouldBindJSON(goods)
-	gh := nh.GetHandler()
+	var goodType = models.NewGoodType()
+	err := c.ShouldBindJSON(goodType)
+	gh := th.GetHandler()
 
-	_, err = gh.InsertOne(goods)
+	_, err = gh.InsertOne(goodType)
 	if err != nil {
 		logs.LG.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
@@ -58,12 +58,12 @@ func (nh *Handler) CreateGoods(c *gin.Context) {
 	}
 }
 
-// DeleteGoods 删除货品
+// DeleteGoodType 删除货品
 // *
-func (nh *Handler) DeleteGoods(c *gin.Context) {
+func (th *Handler) DeleteGoodType(c *gin.Context) {
 	result := &common.Result{}
 	ID, _ := strconv.Atoi(c.Param("ID"))
-	gh := nh.GetHandler()
+	gh := th.GetHandler()
 	err := gh.DeleteOne(ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, result.Fail(500, err.Error()))
@@ -72,28 +72,14 @@ func (nh *Handler) DeleteGoods(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
-// UpdateGoods 货品信息修改
+// UpdateGoodType 分类信息修改
 // *
-func (nh *Handler) UpdateGoods(c *gin.Context) {
+func (th *Handler) UpdateGoodType(c *gin.Context) {
 	result := &common.Result{}
-	gh := nh.GetHandler()
-	var goods = models.NewGoods()
-	err := c.ShouldBindJSON(goods)
-
-	//collection := store.ClientMongo.Database(gh.DatabaseName).Collection(gh.CollectionName)
-	//ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	//defer cancel()
-	//query := bson.M{
-	//	"Phone": customer.Phone,
-	//	"ID":    bson.M{"$ne": customer.ID},
-	//}
-	//find, err := collection.Find(ctx, query)
-	//if find.TryNext(ctx) {
-	//	c.JSON(http.StatusBadRequest, result.Fail(500, "此电话已经存在，请确认。"))
-	//	return
-	//}
-
-	err = gh.UpdateOne(goods)
+	gh := th.GetHandler()
+	var goodType = models.NewGoodType()
+	err := c.ShouldBindJSON(goodType)
+	err = gh.UpdateOne(goodType)
 	if err != nil {
 		logs.LG.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
@@ -102,11 +88,11 @@ func (nh *Handler) UpdateGoods(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
-func (nh *Handler) GetHandler() *common.BaseHandler {
+func (th *Handler) GetHandler() *common.BaseHandler {
 	gh := &common.BaseHandler{
 		DatabaseName:   "test",
-		CollectionName: "goods",
-		Collection:     common.Goods,
+		CollectionName: "goodType",
+		Collection:     common.GoodType,
 	}
 	return gh
 }

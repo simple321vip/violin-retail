@@ -8,4 +8,6 @@ const (
 	Color    = "color"
 	Product  = "product"
 	Customer = "customer"
+	Goods    = "goods"
+	GoodType = "goodType"
 )

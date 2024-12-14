@@ -2,7 +2,7 @@ package models
 
 // Goods 货品
 type Goods struct {
-	ID        int                                                   `bson:"_id"`  // ID
+	ID        int                                                   `bson:"ID"`   // ID
 	Name      string                                                `bson:"Name"` // 品名
 	*GoodType `json:"GoodType,omitempty" bson:"GoodType,omitempty"` // 分类
 	*Brand    `json:"Brand,omitempty" bson:"Brand,omitempty"`       // 品牌
@@ -28,11 +28,21 @@ type Brand struct {
 }
 
 // NewGoods 货品
-func NewGoods() Goods {
-	return Goods{}
+func NewGoods() *Goods {
+	return &Goods{}
+}
+
+// SetID 实现SetID方法，用于接收并设置值
+func (ms *Goods) SetID(ID int) {
+	ms.ID = ID
 }
 
 // NewGoodType 分类
-func NewGoodType() GoodType {
-	return GoodType{}
+func NewGoodType() *GoodType {
+	return &GoodType{}
+}
+
+// SetID 实现SetID方法，用于接收并设置值
+func (ms *GoodType) SetID(ID int) {
+	ms.ID = ID
 }
