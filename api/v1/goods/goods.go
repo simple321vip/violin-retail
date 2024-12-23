@@ -20,29 +20,15 @@ type Handler struct {
 // **
 func (nh *Handler) GetGoods(c *gin.Context) {
 	result := &common.Result{}
-	gh := nh.GetHandler()
-	collection := store.ClientMongo.Database(gh.DatabaseName).Collection(gh.CollectionName)
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	find, err := collection.Find(ctx, bson.D{})
+	goods, err := nh.getAllGoods()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
 		return
 	}
-	var goods []models.Goods
-	for find.Next(ctx) {
-		var good models.Goods
-		err := find.Decode(&good)
-		if err != nil {
-			logs.LG.Error(err.Error())
-			return
-		}
-		goods = append(goods, good)
-	}
 	c.JSON(http.StatusOK, goods)
 }
 
-// IncreaseGoods 新增商品
+// CreateGoods 新增商品
 // **
 func (nh *Handler) CreateGoods(c *gin.Context) {
 	result := &common.Result{}
@@ -100,6 +86,29 @@ func (nh *Handler) UpdateGoods(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, nil)
+}
+
+func (nh *Handler) getAllGoods() ([]models.Goods, error) {
+	gh := nh.GetHandler()
+	collection := store.ClientMongo.Database(gh.DatabaseName).Collection(gh.CollectionName)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	find, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		logs.LG.Error(err.Error())
+		return nil, err
+	}
+	var goods []models.Goods
+	for find.Next(ctx) {
+		var good models.Goods
+		err := find.Decode(&good)
+		if err != nil {
+			logs.LG.Error(err.Error())
+			return nil, err
+		}
+		goods = append(goods, good)
+	}
+	return goods, nil
 }
 
 func (nh *Handler) GetHandler() *common.BaseHandler {

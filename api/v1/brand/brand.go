@@ -32,7 +32,7 @@ func (th *Handler) GetBrand(c *gin.Context) {
 // **
 func (th *Handler) CreateBrand(c *gin.Context) {
 	result := &common.Result{}
-	var brand = models.NewGoodType()
+	var brand = models.NewBrand()
 	err := c.ShouldBindJSON(brand)
 	gh := th.GetHandler()
 

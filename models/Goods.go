@@ -2,11 +2,13 @@ package models
 
 // Goods 货品
 type Goods struct {
-	ID        int                                                   `bson:"ID"`   // ID
-	Name      string                                                `bson:"Name"` // 品名
-	*GoodType `json:"GoodType,omitempty" bson:"GoodType,omitempty"` // 分类
-	*Brand    `json:"Brand,omitempty" bson:"Brand,omitempty"`       // 品牌
-	Unit      string                                                `bson:"Unit"` // 单位
+	ID       int    `bson:"ID"`                                           // ID
+	Name     string `bson:"Name"`                                         // 品名
+	GoodType []int  `json:"GoodType,omitempty" bson:"GoodType,omitempty"` // 分类
+	Brand    int    `json:"Brand,omitempty" bson:"Brand,omitempty"`       // 品牌
+	Unit     string `bson:"Unit"`                                         // 单位
+	Price    int    `bson:"Price"`                                        // 建议零售价
+	Quantity int    `bson:"Quantity"`                                     // 出入库数量
 	// 下面属性为可选
 	Comment string `json:"Comment" bson:"Comment"` // 备注
 	Length  int    `bson:"Length"`                 // 长度
@@ -15,9 +17,11 @@ type Goods struct {
 
 // GoodType 分类
 type GoodType struct {
-	ID      int    `bson:"ID"`      // ID
-	Name    string `bson:"Name"`    // 分类名
-	Comment string `bson:"Comment"` // 备注
+	ID       int        `bson:"ID"`                       // ID
+	Name     string     `bson:"Name"`                     // 分类名
+	Rank     int        `bson:"Rank"`                     // 分类级别 1,2,3
+	Comment  string     `bson:"Comment"`                  // 备注
+	Children []GoodType `json:"children" bson:"Children"` // 子分类
 }
 
 // Brand 品牌
