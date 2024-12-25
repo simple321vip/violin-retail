@@ -42,6 +42,13 @@ func (nh *Handler) CreateGoods(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
 		return
 	}
+	allGoods, err := nh.getAllGoods()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
+		return
+	}
+
+	c.JSON(http.StatusOK, allGoods)
 }
 
 // DeleteGoods 删除货品
@@ -55,7 +62,13 @@ func (nh *Handler) DeleteGoods(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, result.Fail(500, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, nil)
+	allGoods, err := nh.getAllGoods()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
+		return
+	}
+
+	c.JSON(http.StatusOK, allGoods)
 }
 
 // UpdateGoods 货品信息修改
@@ -66,26 +79,20 @@ func (nh *Handler) UpdateGoods(c *gin.Context) {
 	var goods = models.NewGoods()
 	err := c.ShouldBindJSON(goods)
 
-	//collection := store.ClientMongo.Database(gh.DatabaseName).Collection(gh.CollectionName)
-	//ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	//defer cancel()
-	//query := bson.M{
-	//	"Phone": customer.Phone,
-	//	"ID":    bson.M{"$ne": customer.ID},
-	//}
-	//find, err := collection.Find(ctx, query)
-	//if find.TryNext(ctx) {
-	//	c.JSON(http.StatusBadRequest, result.Fail(500, "此电话已经存在，请确认。"))
-	//	return
-	//}
-
 	err = gh.UpdateOne(goods)
 	if err != nil {
 		logs.LG.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
 		return
 	}
-	c.JSON(http.StatusOK, nil)
+
+	allGoods, err := nh.getAllGoods()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
+		return
+	}
+
+	c.JSON(http.StatusOK, allGoods)
 }
 
 func (nh *Handler) getAllGoods() ([]models.Goods, error) {
@@ -98,7 +105,7 @@ func (nh *Handler) getAllGoods() ([]models.Goods, error) {
 		logs.LG.Error(err.Error())
 		return nil, err
 	}
-	var goods []models.Goods
+	var goods = make([]models.Goods, 0)
 	for find.Next(ctx) {
 		var good models.Goods
 		err := find.Decode(&good)

@@ -100,7 +100,7 @@ func (th *Handler) getAllBrands() ([]models.Brand, error) {
 		logs.LG.Error(err.Error())
 		return nil, err
 	}
-	var brands []models.Brand
+	var brands = make([]models.Brand, 0)
 	for find.Next(ctx) {
 		var brand models.Brand
 		err := find.Decode(&brand)

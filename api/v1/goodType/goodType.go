@@ -100,7 +100,7 @@ func (th *Handler) getAllGoodTypes() ([]models.GoodType, error) {
 		logs.LG.Error(err.Error())
 		return nil, err
 	}
-	var goodTypes []models.GoodType
+	var goodTypes = make([]models.GoodType, 0)
 	for find.Next(ctx) {
 		var goodType models.GoodType
 		err := find.Decode(&goodType)
