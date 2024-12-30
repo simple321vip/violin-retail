@@ -19,56 +19,13 @@ type Handler struct {
 // GetOrderList 获取订单一览
 // *
 func (oh *Handler) GetOrderList(c *gin.Context) {
-	//unit := c.Param("unit")
-	start := time.Now().Add(-time.Hour * 24 * 30)
 	result := &common.Result{}
-	DataBase := common.GetTenantDateBase(c)
-	collection := store.ClientMongo.Database(DataBase).Collection(common.Order)
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	unwind := bson.M{
-		"$unwind": bson.M{
-			"path":                       "$Customer", // 将主表查询结果和从表查询结果1对1关联
-			"preserveNullAndEmptyArrays": true,        // 空数组记录保留，不会丢失主表数据
-		},
+	orders, err := oh.getOrders()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
+		return
 	}
-
-	// outer left join
-	lookup := bson.M{
-		"$lookup": bson.M{
-			"from":         "customer",   // 关联表 color
-			"localField":   "CustomerID", // 主表 关联字段
-			"foreignField": "_id",        // 关联表color 关联字段
-			"as":           "Customer",   // 查询后返回结果名称，一对多，该结果为数组，当使用unwind时候，变成1对1形式，变成对象
-		},
-	}
-
-	match := bson.M{
-		"$match": bson.M{
-			"OrderTime": bson.M{
-				"$gt": start,
-			},
-		},
-	}
-
-	pipeline := []bson.M{lookup, unwind, match}
-
-	// 执行聚合查询
-	cursor, err := collection.Aggregate(context.Background(), pipeline)
-	if err == nil {
-		var orders []models.Order
-		for cursor.Next(ctx) {
-			var order models.Order
-			err := cursor.Decode(&order)
-			if err != nil {
-				logs.LG.Error(err.Error())
-				return
-			}
-			orders = append(orders, order)
-		}
-		c.JSON(http.StatusOK, result.Success(orders))
-	}
+	c.JSON(http.StatusOK, orders)
 }
 
 // GetOrder 获取订单明细
@@ -107,13 +64,12 @@ func (oh *Handler) CreateOrder(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
 		return
 	}
-
-	//goodTypes, err := gh.getAllGoodTypes()
-	//if err != nil {
-	//	c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
-	//	return
-	//}
-	c.JSON(http.StatusOK, nil)
+	orders, err := oh.getOrders()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.Fail(500, "系统内部错误"))
+		return
+	}
+	c.JSON(http.StatusOK, orders)
 }
 
 // CancelOrder 取消订单
@@ -223,6 +179,29 @@ func (oh *Handler) UpdateOrder(c *gin.Context) {
 		}
 		c.JSON(http.StatusOK, result.Success(houses))
 	}
+}
+
+func (oh *Handler) getOrders() ([]models.Order, error) {
+	gh := oh.GetHandler()
+	collection := store.ClientMongo.Database(gh.DatabaseName).Collection(gh.CollectionName)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	find, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		logs.LG.Error(err.Error())
+		return nil, err
+	}
+	var orders = make([]models.Order, 0)
+	for find.Next(ctx) {
+		var order models.Order
+		err := find.Decode(&order)
+		if err != nil {
+			logs.LG.Error(err.Error())
+			return nil, err
+		}
+		orders = append(orders, order)
+	}
+	return orders, nil
 }
 
 func (oh *Handler) GetHandler() *common.BaseHandler {

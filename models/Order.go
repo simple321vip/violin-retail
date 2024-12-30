@@ -14,6 +14,7 @@ type Order struct {
 	Freight                  float64      `bson:"Freight"`                            // 运费
 	Comment                  string       `json:"Comment" bson:"Name"`                // 备注
 	IsCancel                 bool         `bson:"IsCancel"`                           // 是否取消
+	Status                   int          `bson:"Status"`                             // 订单状态
 	CustomerPhone            int          `bson:"CustomerPhone"`                      // 顾客电话
 	CustomerName             string       `bson:"CustomerName"`                       // 顾客姓名
 	CustomerAddress          string       `bson:"CustomerAddress"`                    // 顾客地址
