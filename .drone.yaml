@@ -1,10 +1,26 @@
 kind: pipeline
 type: kubernetes
-name: default
+name: devops
+
+metadata:
+  namespace: devops
+
+clone:
+  disable: true # in the kubernetes env, the clone url is localhost, so we can disable the default clone.
 
 steps:
   - name: greeting
     image: ccr.ccs.tencentyun.com/violin/busybox
+    environment:
+      USERNAME:
+        from_secret: docker_uname
+      PASSWORD:
+        from_secret: docker_psword
     commands:
-      - echo hello
-      - echo world
+      - echo hello2
+
+environment:
+  DRONE_KUBERNETES_NAMESPACE: devops
+
+image_pull_secrets:
+  - dockerconfig
