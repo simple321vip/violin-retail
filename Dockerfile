@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ccr.ccs.tencentyun.com/violin/ubuntu:22.04
 LABEL maintainer="Guan.XiangWei"
 
 # 设置镜像的语言 支持中文，否则中文都乱码
