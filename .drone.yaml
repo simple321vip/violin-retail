@@ -21,6 +21,7 @@ steps:
     commands:
       - git clone https://www.violin-work.online/simple321/violin-retail.git .
       - git checkout -b $DRONE_PULL_HEAD origin/$DRONE_PULL_HEAD
+      - ls
     when:
       event: [pull_request]
 
