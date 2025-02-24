@@ -8,19 +8,65 @@ metadata:
 clone:
   disable: true # in the kubernetes env, the clone url is localhost, so we can disable the default clone.
 
+# https://docs.drone.io/pipeline/triggers/
+trigger:
+  event:
+    - pull_request
+  branch:
+    - master
+
 steps:
-  - name: greeting
-    image: ccr.ccs.tencentyun.com/violin/busybox
+  - name: clone
+    image: ccr.ccs.tencentyun.com/violin/drone-git:latest
+    commands:
+      - git clone https://www.violin-work.online/simple321/violin-retail.git .
+      - git checkout -b $DRONE_PULL_HEAD origin/$DRONE_PULL_HEAD
+    when:
+      event: [pull_request]
+
+  - name: test
+    image: ccr.ccs.tencentyun.com/violin/golang:1.19.5
+    commands:
+      - go test
+      - go build
+      - ls
+
+  - name: build
+    image: ccr.ccs.tencentyun.com/violin/docker:20.10.17-git
+    volumes:
+      - name: docker-run
+        path: /var/run/
+    commands:
+      - docker build -t ccr.ccs.tencentyun.com/violin/violin-retail:0.5 .
+
+  - name: deploy
+    image: ccr.ccs.tencentyun.com/violin/docker:20.10.17-git
     environment:
       USERNAME:
         from_secret: docker_uname
       PASSWORD:
         from_secret: docker_psword
+    privileged: true
     commands:
-      - echo hello2
+      - docker login ccr.ccs.tencentyun.com --username=$USERNAME -p $PASSWORD
+      - docker push ccr.ccs.tencentyun.com/violin/violin-retail:0.5
+
+volumes:
+  - name: docker-run
+    host:
+      path: /var/run/
+  - name: kubectl-config
+    host:
+      path: /root/.kube
+
+host_aliases:
+  - ip: 49.233.4.79
+    hostnames:
+      - www.violin-work.online
 
 environment:
   DRONE_KUBERNETES_NAMESPACE: devops
+
 
 image_pull_secrets:
   - dockerconfig
