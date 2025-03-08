@@ -25,6 +25,7 @@ steps:
       - git checkout $DRONE_SOURCE_BRANCH     # 切换到源分支
       - ls
       - ls
+      - ls
 #    when:
 #      event: [pull_request]
 
