@@ -16,7 +16,7 @@ trigger:
     - master
 
 steps:
-  - name: clone
+  - name: test
     image: ccr.ccs.tencentyun.com/violin/drone-git:latest
     commands:
       - ls
