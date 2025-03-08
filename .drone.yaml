@@ -24,8 +24,8 @@ steps:
       - git fetch origin $DRONE_SOURCE_BRANCH
       - git checkout $DRONE_SOURCE_BRANCH     # 切换到源分支
       - ls
-    when:
-      event: [pull_request]
+#    when:
+#      event: [pull_request]
 
   - name: test
     image: ccr.ccs.tencentyun.com/violin/golang:1.19.5
